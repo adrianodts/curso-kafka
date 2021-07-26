@@ -1,0 +1,38 @@
+{
+  "name": "producer-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "start.dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adrianodts/nodejs-kafka.git"
+  },
+  "author": "Adriano Dantas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/adrianodts/nodejs-kafka/issues"
+  },
+  "homepage": "https://github.com/adrianodts/nodejs-kafka#readme",
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "method-override": "^3.0.0",
+    "mongoose": "^5.11.9",
+    "mongoose-type-email": "^1.1.2",
+    "morgan": "^1.10.0",
+    "passport": "^0.4.1",
+    "passport-http": "^0.3.0",
+    "passport-local": "^1.0.0",
+    "pug": "^3.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.6"
+  }
+}

@@ -1,0 +1,95 @@
+version: "3"
+
+services:
+
+  # app:
+  #   build: 
+  #     context: nodejs
+  #   container_name: nodejs-kafka-app
+  #   depends_on:
+  #     - kafka
+  #   extra_hosts:
+  #     - "host.docker.internal:172.17.0.1"
+  producer-app:
+    build: 
+      context: ./producer-app
+      dockerfile: Dockerfile
+    container_name: producer-app
+    ports: 
+      - "3000:3000"
+    depends_on: 
+       - mongo
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+    volumes:
+      - ./producer-app:/usr/app
+      #- /usr/app/node_modules
+    #tty: true
+    
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+  # db:
+  #   image: mysql:5.7
+  #   command: --innodb-use-native-aio=0
+  #   container_name: db
+  #   restart: always
+  #   tty: true
+  #   volumes: 
+  #     - ./mysql:/var/lib/mysql
+  #   environment: 
+  #     - MYSQL_DATABASE=message
+  #     - MYSQL_ROOT_PASSWORD=root
+  #     - MYSQL_USER=root
+  #   extra_hosts:
+  #     - "host.docker.internal:172.17.0.1"
+    #networks: 
+    #  - node-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    hostname: 'kafka-internal.io'
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka-internal.io
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_LISTENERS: INTERNAL://:9092,OUTSIDE://:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://host.docker.internal:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:6.0.1
+    hostname: control-center
+    depends_on:
+      - kafka
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'kafka:9092'
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_CONNECT_CLUSTER: http://kafka-connect:8083
+      PORT: 9021
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
