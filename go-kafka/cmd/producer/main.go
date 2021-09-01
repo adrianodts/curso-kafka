@@ -9,7 +9,10 @@ import (
 func main() {
 	deliveryChain := make(chan kafka.Event)
 	producer := NewKafkaProducer()
-	Publish("mensagem", "teste", producer, nil, deliveryChain)
+	// envia para todas as partições quando o key não informado.
+	// Publish("mensagem", "teste", producer, nil, deliveryChain)
+	// envia sempre para a mesma partição quando o key for informado.
+	Publish("mensagem", "teste", producer, []byte("transferencia"), deliveryChain)
 	go AsyncDeliveryReport(deliveryChain)
 	//SyncDeliveryReport(deliveryChain)
 	producer.Flush(1000)
@@ -18,6 +21,9 @@ func main() {
 func NewKafkaProducer() *kafka.Producer {
 	configMap := &kafka.ConfigMap{
 		"bootstrap.servers": "go-kafka_kafka_1:9092",
+		"delivery.timeout.ms": "0",
+		"acks": "all", // 0-Não aguarda confirmação de entrega; 1-Lider confirma a entrega: all- Lider e brokers confirmam a entrega
+		"enable.idempotence": "true",
 	}
 
 	p, err := kafka.NewProducer(configMap)
